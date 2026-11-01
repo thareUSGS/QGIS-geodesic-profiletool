@@ -522,11 +522,13 @@ class PTDockWidget(QDockWidget, FormClass):
 
     def createTemporaryLayer(self):
         nr = int(self.sender().objectName())
-        type = "Point?crs=" + str(self.profiletoolcore.profiles[nr]["layer"].crs().authid())
+        layer_uri = "Point?crs=" + str(
+            self.profiletoolcore.profiles[nr]["layer"].crs().authid()
+        )
         name = "geodesic_profiletool_{}".format(
             self._profile_name(self.profiletoolcore.profiles[nr])
         )
-        vl = QgsVectorLayer(type, name, "memory")
+        vl = QgsVectorLayer(layer_uri, name, "memory")
         pr = vl.dataProvider()
         vl.startEditing()
         # add fields
@@ -548,13 +550,6 @@ class PTDockWidget(QDockWidget, FormClass):
             fet.setAttributes([self.profiletoolcore.profiles[nr]["z"][i]])
             pr.addFeatures([fet])
         vl.commitChanges()
-        # labeling/enabled
-        if False:
-            labelsettings = vl.labeling().settings()
-            labelsettings.enabled = True
-
-        # vl.setCustomProperty("labeling/enabled", "true")
-        # show layer
         QgsProject.instance().addMapLayer(vl)
 
     # ********************************************************************************

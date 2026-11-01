@@ -24,11 +24,9 @@
 # ---------------------------------------------------------------------
 
 import os
-import platform
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import *
-from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtWidgets import QDialog
 
 uiFilePath = os.path.abspath(os.path.join(os.path.dirname(__file__), "about.ui"))

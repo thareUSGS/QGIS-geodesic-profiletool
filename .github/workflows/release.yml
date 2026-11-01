@@ -34,8 +34,7 @@ jobs:
 
           mkdir -p "$plugin_dir"
           git archive HEAD | tar -x -C "$plugin_dir"
-          rm -rf "$plugin_dir/.github" "$plugin_dir/tests"
-          rm -f "$plugin_dir/Makefile" "$plugin_dir/resources.qrc"
+          rm -rf "$plugin_dir/.github"
 
           test -f "$plugin_dir/__init__.py"
           test -f "$plugin_dir/metadata.txt"

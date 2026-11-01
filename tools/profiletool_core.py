@@ -87,6 +87,7 @@ class ProfileToolCore(QWidget):
         # Used to remove highlighting from previously active layer.
         self.previousLayerId = None
         self.x_cursor = None  # Keep track of last x position of cursor
+        self.pointLayer = None
         # the dockwidget
         self.dockwidget = PTDockWidget(self.iface, self)
         # Initialize the dockwidget combo box with the list of available profiles.
@@ -171,9 +172,6 @@ class ProfileToolCore(QWidget):
             previousLayer = QgsProject.instance().mapLayer(self.previousLayerId)
             if previousLayer:
                 previousLayer.removeSelection()
-        # replicate last point (bug #6680)
-        # if points1:
-        #    points1 = points1 + [points1[-1]]
         self.pointstoDraw = points1
         self.profiles = []
         self.distancesPicked = []
@@ -191,7 +189,6 @@ class ProfileToolCore(QWidget):
             ):
                 self.profiles[i], _, _ = DataReaderTool().dataVectorReaderTool(
                     self.iface,
-                    self.toolrenderer.tool,
                     self.profiles[i],
                     self.pointstoDraw,
                     float(self.dockwidget.mdl.item(i, 4).data(Qt.ItemDataRole.EditRole)),
@@ -239,7 +236,6 @@ class ProfileToolCore(QWidget):
             ):
                 _, buffer, multipoly = DataReaderTool().dataVectorReaderTool(
                     self.iface,
-                    self.toolrenderer.tool,
                     self.profiles[i],
                     self.pointstoDraw,
                     float(self.dockwidget.mdl.item(i, 4).data(Qt.ItemDataRole.EditRole)),
@@ -324,28 +320,40 @@ class ProfileToolCore(QWidget):
 
                 if pointprojected:
                     try:
-                        # test if self.pointLayer does not exist or layer was deleted
-                        if not self.pointLayer:
-                            pass
-                    except:
+                        has_point_layer = bool(self.pointLayer)
+                    except RuntimeError:
                         self.pointLayer = None
-                        layers = QgsProject.instance().mapLayersByName('profile_points')
+                        has_point_layer = False
+
+                    if not has_point_layer:
+                        self.pointLayer = None
+                        layers = QgsProject.instance().mapLayersByName("profile_points")
                         if layers:
                             layer = layers[0]
-                            hasFields = all(v in [f.name() for f in layer.fields()] for v in ['d','z'])
-                            if hasFields and layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() == QgsWkbTypes.PointGeometry:
+                            field_names = {field.name() for field in layer.fields()}
+                            if (
+                                {"d", "z"}.issubset(field_names)
+                                and layer.type() == QgsMapLayer.VectorLayer
+                                and layer.geometryType() == QgsWkbTypes.PointGeometry
+                            ):
                                 self.pointLayer = layer
-                            
-                    if not self.pointLayer:
+
+                    if self.pointLayer is None:
                         # create temporary profile point layer (horizontal distance=d, raster band value=z)
-                        self.pointLayer = QgsVectorLayer("Point?field=z:double&field=d:double&index=yes&crs="+QgsProject.instance().crs().authid(),"profile_points","memory")
+                        layer_uri = (
+                            "Point?field=z:double&field=d:double&index=yes&crs="
+                            + QgsProject.instance().crs().authid()
+                        )
+                        self.pointLayer = QgsVectorLayer(
+                            layer_uri, "profile_points", "memory"
+                        )
                         QgsProject.instance().addMapLayer(self.pointLayer)
 
                     provider = self.pointLayer.dataProvider()
                     feat = QgsFeature(self.pointLayer.fields())
                     feat.setGeometry(QgsGeometry.fromPointXY(pointprojected))
-                    feat['d'] = x.item()
-                    feat['z'] = y.item()
+                    feat["d"] = x.item()
+                    feat["z"] = y.item()
                     provider.addFeatures([feat])
                     self.iface.messageBar().pushMessage(
                         "geodesic_profiletool",
@@ -354,7 +362,9 @@ class ProfileToolCore(QWidget):
                     )
                     qmlPath = os.path.dirname(__file__)
                     qmlPath = os.path.dirname(qmlPath)
-                    self.pointLayer.loadNamedStyle(qmlPath+'/profile_points/profile_points.qml')
+                    self.pointLayer.loadNamedStyle(
+                        qmlPath + "/profile_points/profile_points.qml"
+                    )
                     self.pointLayer.updateExtents()
                     self.pointLayer.triggerRepaint()
 

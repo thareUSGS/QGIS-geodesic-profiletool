@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along
-# with this progsram; if not, write to the Free Software Foundation, Inc.,
+# with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ---------------------------------------------------------------------
@@ -174,7 +174,6 @@ class TableViewTool(QObject):
         mdl.setData(mdl.index(row, 0, QModelIndex()), True, Qt.ItemDataRole.CheckStateRole)
         mdl.item(row, 0).setFlags(Qt.ItemFlag.ItemIsSelectable)
         lineColour = Qt.GlobalColor.red
-        # QGis2
         if (
             (layer2.type() == layer2.PluginLayer and layer2.LAYER_TYPE == "crayfish_viewer")
             or (layer2.type() == layer2.PluginLayer and layer2.LAYER_TYPE == "selafin_viewer")
@@ -282,11 +281,6 @@ class TableViewTool(QObject):
                 choosenBand = previousparam
             mdl.setData(mdl.index(temp.row(), 3, QModelIndex()), choosenBand)
             self.layerAddedOrRemoved.emit()
-
-        elif False and index1.column() == 4:
-            # name = mdl.item(index1.row(),2).data(Qt.ItemDataRole.EditRole)
-            name = mdl.item(index1.row(), 4).data(Qt.ItemDataRole.EditRole)
-            print(name)
 
         else:
             return

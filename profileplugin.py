@@ -54,7 +54,6 @@ class ProfilePlugin:
 
         self.profiletool = None
         self.dockOpened = False  # remember for not reopening dock if there's already one opened
-        self.canvas.mapToolSet.connect(self.mapToolChanged)
 
     def initGui(self):
         # create action
@@ -75,7 +74,6 @@ class ProfilePlugin:
     def unload(self):
         with suppress(AttributeError, RuntimeError, TypeError):
             self.profiletool.dockwidget.close()
-            self.canvas.mapToolSet.disconnect(self.mapToolChanged)
 
         self.iface.removeToolBarIcon(self.action)
         self.iface.removePluginMenu("&geodesic_profiletool", self.action)
@@ -85,18 +83,14 @@ class ProfilePlugin:
         return QCoreApplication.translate("ProfilePlugin", message)
 
     def run(self):
-
         if not self.dockOpened:
-            # if self.profiletool is None:
             self.profiletool = ProfileToolCore(self.iface, self)
             self.iface.addDockWidget(
                 self.profiletool.dockwidget.location, self.profiletool.dockwidget
             )
             self.profiletool.dockwidget.closed.connect(self.cleaning)
             self.dockOpened = True
-            self.profiletool.activateProfileMapTool()
-        else:
-            self.profiletool.activateProfileMapTool()
+        self.profiletool.activateProfileMapTool()
 
     def cleaning(self):
         self.dockOpened = False
@@ -105,10 +99,6 @@ class ProfilePlugin:
             self.canvas.unsetMapTool(self.profiletool.toolrenderer.tool)
         self.canvas.setMapTool(self.profiletool.saveTool)
         self.iface.mainWindow().statusBar().showMessage("")
-
-    def mapToolChanged(self, newtool, oldtool=None):
-        pass
-        # print('maptoolchanged',newtool,oldtool)
 
     def about(self):
         from .ui.dlgabout import DlgAbout

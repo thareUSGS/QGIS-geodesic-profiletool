@@ -9,24 +9,16 @@ project does not specify one).
 
 ## Installation
 
-Download `geodesic_profiletool_0.1.0.zip` from the GitHub release and install it
+Download `geodesic_profiletool_0.2.0.zip` from the GitHub release and install it
 in QGIS using **Plugins > Manage and Install Plugins > Install from ZIP**.
 
 ## Releases
 
-Pushing a version tag such as `v0.1.0` creates a GitHub Release with a
-QGIS-installable `geodesic_profiletool_0.1.0.zip` asset. The tag version must
+Pushing a version tag such as `v0.2.0` creates a GitHub Release with a
+QGIS-installable `geodesic_profiletool_0.2.0.zip` asset. The tag version must
 match the plugin version in `metadata.txt`.
 
-**Authors:** CoPilot Lunar - Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra
-
-**Current mantainer:** PANOimagen S.L.
-
-**email:** *javier@panoimagen.com*
-
-Fork of etiennesky/profiletool QGis plugin. We add support to select all 
-the features in a Layer and visualization of slope profile in addition to height profile. 
-This work has been partially funded by the C.A. La Rioja
+Authors: CoPilot Lunar - (Orginal authors: Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra)
 
 **geodesic_profiletool license:**
 

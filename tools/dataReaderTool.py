@@ -23,25 +23,29 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ---------------------------------------------------------------------
-import platform
 from math import sqrt
 
 import numpy as np
-import qgis
-from qgis.core import *
+from qgis.core import (
+    QgsCoordinateTransform,
+    QgsDistanceArea,
+    QgsFeatureRequest,
+    QgsGeometry,
+    QgsPointXY,
+    QgsProject,
+    QgsRaster,
+)
+from qgis.gui import QgsMapToolIdentify
 from qgis.PyQt.QtCore import QCoreApplication
 
 from .utils import isProfilable
 
 
 class DataReaderTool:
-    """def __init__(self):
-    self.profiles = None"""
-
     @staticmethod
     def _createDistanceArea(crs):
         project = QgsProject.instance()
-        distance = qgis.core.QgsDistanceArea()
+        distance = QgsDistanceArea()
         distance.setSourceCrs(crs, project.transformContext())
 
         ellipsoid = project.ellipsoid()
@@ -55,6 +59,7 @@ class DataReaderTool:
 
     @staticmethod
     def _geodesicChainages(geom, chainages, distance):
+        """Convert planar geometry chainages to geodesic distances in meters."""
         line = geom.asPolyline()
         segments = []
         planar_start = 0.0
@@ -111,9 +116,8 @@ class DataReaderTool:
 
         distance = self._createDistanceArea(self.profiles["layer"].crs())
 
-        # Get the values on the lines
+        # Sample each segment at the requested resolution.
         l = []
-        z = []
         x = []
         y = []
         lbefore = 0
@@ -123,7 +127,7 @@ class DataReaderTool:
         first_segment = True
         for p_start, p_end in zip(self.pointstoDraw[:-1], self.pointstoDraw[1:]):
 
-            # for each polylines, set points x,y with map crs (%D) and layer crs (%C)
+            # Transform each line segment into the sampled layer's CRS.
             pointstoCal1 = self.tool.toLayerCoordinates(
                 self.profiles["layer"], QgsPointXY(*p_start)
             )
@@ -132,9 +136,7 @@ class DataReaderTool:
             y1C = float(pointstoCal1.y())
             x2C = float(pointstoCal2.x())
             y2C = float(pointstoCal2.y())
-            # lenght between (x1,y1) and (x2,y2)
             tlC = sqrt(((x2C - x1C) * (x2C - x1C)) + ((y2C - y1C) * (y2C - y1C)))
-            # Set the res of calcul
             try:
                 res = (
                     min(
@@ -155,26 +157,21 @@ class DataReaderTool:
             except AttributeError:
                 # MeshLayers have no rasterUnitsPerPixelX/Y attribute
                 res = 1
-            # enventually use bigger step, wether full res is selected or not
             if resolution_mode == "samples":
-                """Only take values at sample points, no intermediate values."""
+                # Sample only the line vertices.
                 steps = 1
             else:
                 if res != 0:
-                    """Use the map's resolution."""
                     steps = int(tlC / res)
                     if resolution_mode == "limited":
-                        """Hard coded limit to 1000 points per segment."""
                         steps = min(steps, 1000)
                 else:
                     steps = 1000
 
             if steps < 1:
                 steps = 1
-            # calculate dx, dy and dl for one step
             dxC = (x2C - x1C) / steps
             dyC = (y2C - y1C) / steps
-            # reading data
             if first_segment:
                 debut = 0
                 first_segment = False
@@ -193,11 +190,8 @@ class DataReaderTool:
                 l.append(lbefore + segment_distance)
                 previous_point = current_point
             lbefore += segment_distance
-        # Extract the profile for the whole path
         z = self._extractZValues(x, y)
 
-        # End of polyline analysis
-        # filling the main data dictionary "profiles"
         self.profiles["l"] = l
         self.profiles["z"] = z
         self.profiles["x"] = x
@@ -207,17 +201,12 @@ class DataReaderTool:
         return self.profiles
 
     def _status_update(self, advancement_pct):
-        """Send a progress message to status bar.
-
-        advancement_pct is the advancemente in percentage (from 0 to 100).
-        """
+        """Display profile sampling progress in the QGIS status bar."""
         if advancement_pct % 10 == 0:
             progress = "Creating profile: " + "|" * (advancement_pct // 10)
             self.iface.mainWindow().statusBar().showMessage(progress)
 
     def _extractZValues(self, x, y):
-        # Initialize message bar...
-
         layer = self.profiles["layer"]
         choosenBand = self.profiles["band"]
 
@@ -227,19 +216,19 @@ class DataReaderTool:
                 ident = layer.identify(QgsPointXY(*coords))
                 try:
                     attr = float(list(ident[1].values())[choosenBand])
-                except:
+                except (AttributeError, IndexError, KeyError, TypeError, ValueError):
                     attr = 0
                 z.append(attr)
                 self._status_update((100 * n) // (len(x) - 1))
         elif layer.type() == layer.MeshLayer:
-            identifier = qgis.gui.QgsMapToolIdentify(qgis.utils.iface.mapCanvas())
+            identifier = QgsMapToolIdentify(self.iface.mapCanvas())
             meshFld = QCoreApplication.translate("QgsMapToolIdentify", "Scalar Value")
             for n, coords in enumerate(zip(x, y)):
                 ident = identifier.identify(
                     QgsGeometry.fromPointXY(QgsPointXY(*coords)),
-                    qgis.gui.QgsMapToolIdentify.DefaultQgsSetting,
+                    QgsMapToolIdentify.DefaultQgsSetting,
                     [layer],
-                    qgis.gui.QgsMapToolIdentify.MeshLayer,
+                    QgsMapToolIdentify.MeshLayer,
                 )[0]
 
                 try:
@@ -254,7 +243,6 @@ class DataReaderTool:
                 ident = layer.dataProvider().identify(
                     QgsPointXY(*coords), QgsRaster.IdentifyFormat.IdentifyFormatValue
                 )
-                # if ident is not None and ident.has_key(choosenBand+1):
                 if ident is not None and (choosenBand in ident.results()):
                     attr = ident.results()[choosenBand]
                 else:
@@ -263,60 +251,25 @@ class DataReaderTool:
                 self._status_update((100 * n) // (len(x) - 1))
         return z
 
-    def dataVectorReaderTool(self, iface1, tool1, profile1, pointstoDraw1, valbuf1):
-        """
-        compute the projected points
-        return :
-            self.buffergeom : the qgsgeometry of the buffer
-            self.projectedpoints : [..., [(point caracteristics : )
-                                          #index : descripion
-                                          #0 : the pk of the projected point relative to line
-                                          #1 : the x coordinate of the projected point
-                                          #2 : the y coordinate of the projected point
-                                          #3 : the lenght between original point and projected point else -1 if interpolated
-                                          #4 : the segment of the polyline on which the point is projected
-                                          #5 : the interp value if interpfield>-1, else None
-                                          #6 : the x coordinate of the original point if the point is not interpolated, else None
-                                          #6 : the y coordinate of the original point if the point is not interpolated, else None
-                                          #6 : the feature the original point if the point is not interpolated, else None],
-                                           ...]
-        Return a dictionnary : {"layer" : layer read,
-                                "band" : band read,
-                                "l" : geodesic distance in meters from the line origin,
-                                "z" : array of computed z
-
-
-        """
-        layercrs = profile1["layer"].crs()
-        mapcanvascrs = qgis.utils.iface.mapCanvas().mapSettings().destinationCrs()
-
-        valbuffer = valbuf1
+    def dataVectorReaderTool(self, iface, profile1, pointstoDraw1, valbuf1):
+        """Return point elevations projected onto the line and overlay geometries."""
+        layer_crs = profile1["layer"].crs()
+        buffer_distance = valbuf1
 
         projectedpoints = []
-        buffergeom = None
+        source_crs = iface.mapCanvas().mapSettings().destinationCrs()
+        xform = QgsCoordinateTransform(source_crs, layer_crs, QgsProject.instance())
 
-        sourceCrs = QgsCoordinateReferenceSystem(
-            qgis.utils.iface.mapCanvas().mapSettings().destinationCrs()
-        )
-        destCrs = QgsCoordinateReferenceSystem(profile1["layer"].crs())
-        if qgis.core.Qgis.QGIS_VERSION[0] > "2":
-            # In QGIS 3 QgsCoordinateTransform needs a QgsCoordinateTransformContext
-            xform = QgsCoordinateTransform(sourceCrs, destCrs, QgsProject.instance())
-            xformrev = QgsCoordinateTransform(destCrs, sourceCrs, QgsProject.instance())
-        else:
-            xform = QgsCoordinateTransform(sourceCrs, destCrs)
-            xformrev = QgsCoordinateTransform(destCrs, sourceCrs)
-
-        geom = qgis.core.QgsGeometry.fromPolylineXY(
+        geom = QgsGeometry.fromPolylineXY(
             [QgsPointXY(point[0], point[1]) for point in pointstoDraw1]
         )
 
-        geominlayercrs = qgis.core.QgsGeometry(geom)
-        tempresult = geominlayercrs.transform(xform)
+        geominlayercrs = QgsGeometry(geom)
+        geominlayercrs.transform(xform)
 
-        buffergeom = geom.buffer(valbuffer, 12)
-        buffergeominlayercrs = qgis.core.QgsGeometry(buffergeom)
-        tempresult = buffergeominlayercrs.transform(xform)
+        buffergeom = geom.buffer(buffer_distance, 12)
+        buffergeominlayercrs = QgsGeometry(buffergeom)
+        buffergeominlayercrs.transform(xform)
 
         featsPnt = profile1["layer"].getFeatures(
             QgsFeatureRequest().setFilterRect(buffergeominlayercrs.boundingBox())
@@ -326,49 +279,44 @@ class DataReaderTool:
             # iterate preselected point features and perform exact check with current polygon
             point3 = featPnt.geometry()
             distpoint = geominlayercrs.distance(point3)
-            if distpoint <= valbuffer:
+            if distpoint <= buffer_distance:
                 distline = geominlayercrs.lineLocatePoint(point3)
                 pointprojected = geominlayercrs.interpolate(distline)
                 if profile1["band"] > -1:
                     try:
                         interptemp = float(featPnt[profile1["band"]])
-                    except:
+                    except (TypeError, ValueError):
                         continue
                 else:
                     interptemp = None
 
-                try:
-                    projectedpoints.append(
-                        [
-                            distline,
-                            pointprojected.asPoint().x(),
-                            pointprojected.asPoint().y(),
-                            distpoint,
-                            0,
-                            interptemp,
-                            featPnt.geometry().asPoint().x(),
-                            featPnt.geometry().asPoint().y(),
-                            featPnt,
-                        ]
-                    )
-                except ValueError:
-                    print
+                projectedpoints.append(
+                    [
+                        distline,
+                        pointprojected.asPoint().x(),
+                        pointprojected.asPoint().y(),
+                        distpoint,
+                        0,
+                        interptemp,
+                        featPnt.geometry().asPoint().x(),
+                        featPnt.geometry().asPoint().y(),
+                        featPnt,
+                    ]
+                )
 
         projectedpoints = np.array(projectedpoints)
 
         # perform postprocess computation
 
         if len(projectedpoints) > 0:
-            # remove duplicates
-            projectedpoints = self.removeDuplicateLenght(projectedpoints)
-            # interpolate value at nodes of polyline
-            projectedpoints = self.interpolateNodeofPolyline(geominlayercrs, projectedpoints)
+            projectedpoints = self.removeDuplicateLength(projectedpoints)
+            projectedpoints = self.interpolateNodesOfPolyline(geominlayercrs, projectedpoints)
 
         # preparing return value
         profile = {}
         profile["layer"] = profile1["layer"]
         profile["band"] = profile1["band"]
-        distance = self._createDistanceArea(layercrs)
+        distance = self._createDistanceArea(layer_crs)
         profile["l"] = self._geodesicChainages(
             geominlayercrs, [projectedpoint[0] for projectedpoint in projectedpoints], distance
         )
@@ -376,16 +324,16 @@ class DataReaderTool:
         profile["x"] = [projectedpoint[1] for projectedpoint in projectedpoints]
         profile["y"] = [projectedpoint[2] for projectedpoint in projectedpoints]
 
-        multipoly = qgis.core.QgsGeometry.fromMultiPolylineXY(
+        multipoly = QgsGeometry.fromMultiPolylineXY(
             [
                 [
                     xform.transform(
                         QgsPointXY(projectedpoint[1], projectedpoint[2]),
-                        qgis.core.QgsCoordinateTransform.ReverseTransform,
+                        QgsCoordinateTransform.ReverseTransform,
                     ),
                     xform.transform(
                         QgsPointXY(projectedpoint[6], projectedpoint[7]),
-                        qgis.core.QgsCoordinateTransform.ReverseTransform,
+                        QgsCoordinateTransform.ReverseTransform,
                     ),
                 ]
                 for projectedpoint in projectedpoints
@@ -394,54 +342,31 @@ class DataReaderTool:
 
         return profile, buffergeom, multipoly
 
-    def removeDuplicateLenght(self, projectedpoints):
+    def removeDuplicateLength(self, projectedpoints):
 
         projectedpointsfinal = []
         duplicate = []
-        leninterp = len(projectedpoints)
-        PRECISION = 0.01
+        tolerance = 0.01
 
         for i in range(len(projectedpoints)):
-            pointtoinsert = None
             if i in duplicate:
                 continue
             else:
                 mindist = np.absolute(projectedpoints[:, 0] - projectedpoints[i, 0])
-                mindeltaalti = np.absolute(projectedpoints[:, 5] - projectedpoints[i, 5])
-                mindistindex = np.where(mindist < PRECISION)
+                mindistindex = np.where(mindist < tolerance)
 
-                if False:
-                    minalitindex = np.where(mindeltaalti < PRECISION)
-                    minindex = np.intersect1d(mindistindex[0], minalitindex[0])
-                    # duplicate lenght with same alti : keep only one
-                    if len(minindex) <= 1:
-                        projectedpointsfinal.append(projectedpoints[i])
-                    else:
-                        duplicate += minindex.tolist()
-                        projectedpointsfinal.append(projectedpoints[i])
-
-                    # duplicate lenght with different alti : keep the closest
-                    mindistindex = np.setdiff1d(mindistindex[0], minindex, assume_unique=True)
-                else:
-                    # insert closest point
-                    closestindex = np.argmin(projectedpoints[mindistindex[0], 3])
-                    projectedpointsfinal.append(projectedpoints[mindistindex[0][closestindex]])
-                    duplicate += mindistindex[0].tolist()
+                closestindex = np.argmin(projectedpoints[mindistindex[0], 3])
+                projectedpointsfinal.append(projectedpoints[mindistindex[0][closestindex]])
+                duplicate += mindistindex[0].tolist()
 
         projectedpoints = np.array(projectedpointsfinal)
         projectedpoints = projectedpoints[projectedpoints[:, 0].argsort()]
         return projectedpoints
 
-    # def interpolateNodeofPolyline(self,geom):
-    def interpolateNodeofPolyline(self, geom, projectedpoints):
-        """
-        projectedpoints : array [[lenght, xprojected ,yprojected ,dist from origignal point, segment of polyline on witch it's projected, atribute (z), xoriginal point, yoriginal point ,original point feature], ... ]
-        """
-        PRECISION = 0.01
+    def interpolateNodesOfPolyline(self, geom, projectedpoints):
+        tolerance = 0.01
         polyline = geom.asPolyline()
         projectedpoints = projectedpoints[projectedpoints[:, 0].argsort()]
-
-        lenpoly = 0
 
         # Write fist and last element if no value
         if projectedpoints[0][0] != 0:
@@ -485,22 +410,16 @@ class DataReaderTool:
 
         projectedpointsinterp = []
 
-        for i, point in enumerate(polyline):
-            if i == 0:
-                continue
-            elif i == len(polyline) - 1:
-                break
-            else:
-                vertexpoint_xy = QgsPointXY(geom.vertexAt(i))
-                # vertexpoint_xy = QgsPointXY(vertexpoint.x(), vertexpoint.y())
-                lenpoly = geom.lineLocatePoint(qgis.core.QgsGeometry.fromPointXY(vertexpoint_xy))
+        for i in range(1, len(polyline) - 1):
+            vertexpoint_xy = QgsPointXY(geom.vertexAt(i))
+            lenpoly = geom.lineLocatePoint(QgsGeometry.fromPointXY(vertexpoint_xy))
 
-                if min(abs(projectedpoints[:, 0] - lenpoly)) < PRECISION:
-                    continue
-                else:
-                    temp1 = self.interpolatePoint(vertexpoint_xy, geom, projectedpoints)
-                    if temp1 != None:
-                        projectedpointsinterp.append(temp1)
+            if min(abs(projectedpoints[:, 0] - lenpoly)) < tolerance:
+                continue
+
+            interpolated = self.interpolatePointAtNode(vertexpoint_xy, geom, projectedpoints)
+            if interpolated is not None:
+                projectedpointsinterp.append(interpolated)
 
         temp = projectedpoints.tolist() + projectedpointsinterp
         projectedpoints = np.array(temp)
@@ -509,9 +428,9 @@ class DataReaderTool:
 
         return projectedpoints
 
-    def interpolatePoint(self, vertexpoint, geom, projectedpoints):
-
-        lenpoly = geom.lineLocatePoint(qgis.core.QgsGeometry.fromPointXY(vertexpoint))
+    def interpolatePointAtNode(self, vertexpoint, geom, projectedpoints):
+        """Interpolate the sampled value at a vertex missing from the profile."""
+        lenpoly = geom.lineLocatePoint(QgsGeometry.fromPointXY(vertexpoint))
 
         previouspointindex = np.max(np.where(projectedpoints[:, 0] <= lenpoly)[0])
         nextpointindex = np.min(np.where(projectedpoints[:, 0] >= lenpoly)[0])
@@ -525,7 +444,6 @@ class DataReaderTool:
                 / lentot
                 * lentemp
             )
-            # return [lenpoly, point[0], point[1], -1, None ,z,point[0], point[1], None ]
             return [
                 lenpoly,
                 vertexpoint.x(),

@@ -17,7 +17,7 @@
 # *                                                                         *
 # ***************************************************************************/
 # Makefile for a PyQGIS plugin 
-PLUGINNAME = profiletool
+PLUGINNAME = geodesic_profiletool
 PY_FILES =  __init__.py  profileplugin.py
 PY_FILES1 = doProfile.py  selectPointTool.py
 EXTRAS = metadata.txt resources.qrc

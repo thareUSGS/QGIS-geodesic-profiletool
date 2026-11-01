@@ -38,11 +38,69 @@ class DataReaderTool:
     """def __init__(self):
     self.profiles = None"""
 
+    @staticmethod
+    def _createDistanceArea(crs):
+        project = QgsProject.instance()
+        distance = qgis.core.QgsDistanceArea()
+        distance.setSourceCrs(crs, project.transformContext())
+
+        ellipsoid = project.ellipsoid()
+        if not ellipsoid or ellipsoid.upper() == "NONE":
+            ellipsoid = crs.ellipsoidAcronym()
+        distance.setEllipsoid(ellipsoid)
+        if not distance.willUseEllipsoid():
+            raise ValueError(f"No valid ellipsoid is available for CRS {crs.authid()}")
+
+        return distance
+
+    @staticmethod
+    def _geodesicChainages(geom, chainages, distance):
+        line = geom.asPolyline()
+        segments = []
+        planar_start = 0.0
+        geodesic_start = 0.0
+
+        for start, end in zip(line[:-1], line[1:]):
+            start_xy = QgsPointXY(start)
+            end_xy = QgsPointXY(end)
+            planar_length = sqrt(
+                (end_xy.x() - start_xy.x()) ** 2 + (end_xy.y() - start_xy.y()) ** 2
+            )
+            geodesic_length = distance.measureLine(start_xy, end_xy)
+            segments.append(
+                (start_xy, end_xy, planar_start, planar_length, geodesic_start)
+            )
+            planar_start += planar_length
+            geodesic_start += geodesic_length
+
+        result = []
+        for chainage in chainages:
+            chainage = float(chainage)
+            for index, (start, end, planar_start, planar_length, geodesic_start) in enumerate(
+                segments
+            ):
+                if chainage <= planar_start + planar_length or index == len(segments) - 1:
+                    fraction = (
+                        0.0
+                        if planar_length == 0
+                        else min(1.0, max(0.0, (chainage - planar_start) / planar_length))
+                    )
+                    point = QgsPointXY(
+                        start.x() + fraction * (end.x() - start.x()),
+                        start.y() + fraction * (end.y() - start.y()),
+                    )
+                    result.append(geodesic_start + distance.measureLine(start, point))
+                    break
+            else:
+                result.append(geodesic_start)
+
+        return result
+
     def dataRasterReaderTool(self, iface1, tool1, profile1, pointstoDraw1, resolution_mode):
         """
         Return a dictionnary : {"layer" : layer read,
                                 "band" : band read,
-                                "l" : array of computed lenght,
+                                "l" : geodesic distance in meters from the line origin,
                                 "z" : array of computed z
         """
         # init
@@ -51,7 +109,7 @@ class DataReaderTool:
         self.pointstoDraw = pointstoDraw1  # the polyline to compute
         self.iface = iface1  # QGis interface to show messages in status bar
 
-        distance = qgis.core.QgsDistanceArea()
+        distance = self._createDistanceArea(self.profiles["layer"].crs())
 
         # Get the values on the lines
         l = []
@@ -70,10 +128,6 @@ class DataReaderTool:
                 self.profiles["layer"], QgsPointXY(*p_start)
             )
             pointstoCal2 = self.tool.toLayerCoordinates(self.profiles["layer"], QgsPointXY(*p_end))
-            x1D = float(p_start[0])
-            y1D = float(p_start[1])
-            x2D = float(p_end[0])
-            y2D = float(p_end[1])
             x1C = float(pointstoCal1.x())
             y1C = float(pointstoCal1.y())
             x2C = float(pointstoCal2.x())
@@ -118,26 +172,27 @@ class DataReaderTool:
             if steps < 1:
                 steps = 1
             # calculate dx, dy and dl for one step
-            dxD = (x2D - x1D) / steps
-            dyD = (y2D - y1D) / steps
-            dlD = sqrt((dxD * dxD) + (dyD * dyD))
             dxC = (x2C - x1C) / steps
             dyC = (y2C - y1C) / steps
-            # dlC = sqrt ((dxC*dxC) + (dyC*dyC))
             # reading data
             if first_segment:
                 debut = 0
                 first_segment = False
             else:
                 debut = 1
+            segment_distance = 0.0
+            previous_point = QgsPointXY(x1C, y1C)
             for n in range(debut, steps + 1):
                 xC = x1C + dxC * n
                 yC = y1C + dyC * n
-                lD = dlD * n + lbefore
+                current_point = QgsPointXY(xC, yC)
+                if n > 0:
+                    segment_distance += distance.measureLine(previous_point, current_point)
                 x.append(xC)
                 y.append(yC)
-                l.append(lD)
-            lbefore = l[-1]
+                l.append(lbefore + segment_distance)
+                previous_point = current_point
+            lbefore += segment_distance
         # Extract the profile for the whole path
         z = self._extractZValues(x, y)
 
@@ -227,7 +282,7 @@ class DataReaderTool:
                                            ...]
         Return a dictionnary : {"layer" : layer read,
                                 "band" : band read,
-                                "l" : array of computed lenght,
+                                "l" : geodesic distance in meters from the line origin,
                                 "z" : array of computed z
 
 
@@ -313,7 +368,10 @@ class DataReaderTool:
         profile = {}
         profile["layer"] = profile1["layer"]
         profile["band"] = profile1["band"]
-        profile["l"] = [projectedpoint[0] for projectedpoint in projectedpoints]
+        distance = self._createDistanceArea(layercrs)
+        profile["l"] = self._geodesicChainages(
+            geominlayercrs, [projectedpoint[0] for projectedpoint in projectedpoints], distance
+        )
         profile["z"] = [projectedpoint[5] for projectedpoint in projectedpoints]
         profile["x"] = [projectedpoint[1] for projectedpoint in projectedpoints]
         profile["y"] = [projectedpoint[2] for projectedpoint in projectedpoints]

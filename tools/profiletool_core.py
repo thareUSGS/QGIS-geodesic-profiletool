@@ -30,7 +30,15 @@ import numpy as np
 import os
 
 # qgis import
-from qgis.core import QgsGeometry, QgsMapLayer, QgsPoint, QgsPointXY, QgsProject, Qgis
+from qgis.core import (
+    QgsCoordinateTransform,
+    QgsGeometry,
+    QgsMapLayer,
+    QgsPoint,
+    QgsPointXY,
+    QgsProject,
+    Qgis,
+)
 from qgis.core import QgsVectorLayer, QgsFeature, QgsWkbTypes
 
 # from qgis.gui import *
@@ -258,19 +266,61 @@ class ProfileToolCore(QWidget):
         self.updateCursorOnMap(self.x_cursor)
         self.enableMouseCoordonates(self.dockwidget.plotlibrary)
 
+    def pointOnMapProfile(self, distance):
+        if not self.pointstoDraw:
+            return None
+
+        if self.profiles:
+            profile = next(
+                (
+                    candidate
+                    for candidate in self.profiles
+                    if candidate["l"] and candidate["x"] and candidate["y"]
+                ),
+                None,
+            )
+            if profile:
+                profile_distances = profile["l"]
+                target_distance = max(0.0, float(distance))
+                index = int(np.searchsorted(profile_distances, target_distance))
+                if len(profile_distances) == 1 or index == 0:
+                    start_index = 0
+                    fraction = 0.0
+                elif index >= len(profile_distances):
+                    start_index = len(profile_distances) - 2
+                    fraction = 1.0
+                else:
+                    start_index = index - 1
+                    segment_distance = (
+                        profile_distances[start_index + 1] - profile_distances[start_index]
+                    )
+                    fraction = (
+                        0.0
+                        if segment_distance == 0
+                        else (target_distance - profile_distances[start_index])
+                        / segment_distance
+                    )
+
+                end_index = min(start_index + 1, len(profile_distances) - 1)
+                point = QgsPointXY(
+                    profile["x"][start_index]
+                    + fraction * (profile["x"][end_index] - profile["x"][start_index]),
+                    profile["y"][start_index]
+                    + fraction * (profile["y"][end_index] - profile["y"][start_index]),
+                )
+                map_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
+                transform = QgsCoordinateTransform(
+                    profile["layer"].crs(), map_crs, self.instance
+                )
+                return transform.transform(point)
+
+        return None
+
     def setPointOnMap(self, x, y):
         self.x_cursor = x
         if self.pointstoDraw and self.doTracking:
             if x is not None:
-                points = [QgsPointXY(*p) for p in self.pointstoDraw]
-                geom = QgsGeometry.fromPolylineXY(points)
-                try:
-                    if len(points) > 1:
-                        pointprojected = geom.interpolate(x).asPoint()
-                    else:
-                        pointprojected = points[0]
-                except (IndexError, AttributeError, ValueError):
-                    pointprojected = None
+                pointprojected = self.pointOnMapProfile(x)
 
                 if pointprojected:
                     try:
@@ -297,7 +347,11 @@ class ProfileToolCore(QWidget):
                     feat['d'] = x.item()
                     feat['z'] = y.item()
                     provider.addFeatures([feat])
-                    self.iface.messageBar().pushMessage("Profile Tool", "Point added to layer \"profile_points\"", level=Qgis.Info)
+                    self.iface.messageBar().pushMessage(
+                        "geodesic_profiletool",
+                        'Point added to layer "profile_points"',
+                        level=Qgis.Info,
+                    )
                     qmlPath = os.path.dirname(__file__)
                     qmlPath = os.path.dirname(qmlPath)
                     self.pointLayer.loadNamedStyle(qmlPath+'/profile_points/profile_points.qml')
@@ -308,15 +362,7 @@ class ProfileToolCore(QWidget):
         self.x_cursor = x
         if self.pointstoDraw and self.doTracking:
             if x is not None:
-                points = [QgsPointXY(*p) for p in self.pointstoDraw]
-                geom = QgsGeometry.fromPolylineXY(points)
-                try:
-                    if len(points) > 1:
-                        pointprojected = geom.interpolate(x).asPoint()
-                    else:
-                        pointprojected = points[0]
-                except (IndexError, AttributeError, ValueError):
-                    pointprojected = None
+                pointprojected = self.pointOnMapProfile(x)
 
                 if pointprojected:
                     self.toolrenderer.rubberbandpoint.setCenter(pointprojected)
@@ -484,7 +530,7 @@ class ProfileToolCore(QWidget):
                     for item in self.dockwidget.plotWdg.allChildItems():
                         if (
                             str(type(item))
-                            == "<class 'profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>"  # noqa: E501
+                            == "<class 'geodesic_profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>"  # noqa: E501
                         ):
                             if item.name() == "cross_vertical":
                                 item.show()
@@ -494,7 +540,7 @@ class ProfileToolCore(QWidget):
                                 item.setPos(ytoplot)
                         elif (
                             str(type(item))
-                            == "<class 'profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>"
+                            == "<class 'geodesic_profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>"
                         ):
                             if item.textItem.toPlainText()[0] == "X":
                                 item.show()

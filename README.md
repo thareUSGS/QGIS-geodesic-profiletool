@@ -1,10 +1,24 @@
-# Profile Tool ![image](https://github.com/PANOimagen/profiletool/blob/master/icons/profileIcon.png?raw=true)
+# geodesic_profiletool ![image](https://github.com/thareUSGS/QGIS-geodesic-profiletool/blob/main/icons/profileIcon.png?raw=true)
 
 This tool plots profile lines from raster layers or point vector layer with elevation field. 
 Supports multiple lines as well as graph export to svg, pdf, png or csv file. 
 Supports 3D polyline export to dxf. 
+Horizontal profile distances are measured geodesically in meters using each
+profile layer's CRS and the project's ellipsoid (or the CRS ellipsoid when the
+project does not specify one).
 
-**Authors:** Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra
+## Installation
+
+Download `geodesic_profiletool_0.1.0.zip` from the GitHub release and install it
+in QGIS using **Plugins > Manage and Install Plugins > Install from ZIP**.
+
+## Releases
+
+Pushing a version tag such as `v0.1.0` creates a GitHub Release with a
+QGIS-installable `geodesic_profiletool_0.1.0.zip` asset. The tag version must
+match the plugin version in `metadata.txt`.
+
+**Authors:** CoPilot Lunar - Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra
 
 **Current mantainer:** PANOimagen S.L.
 
@@ -14,7 +28,7 @@ Fork of etiennesky/profiletool QGis plugin. We add support to select all
 the features in a Layer and visualization of slope profile in addition to height profile. 
 This work has been partially funded by the C.A. La Rioja
 
-**Profile Tool license:**
+**geodesic_profiletool license:**
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -54,7 +54,9 @@ class TableViewTool(QObject):
                     templist += [[layer, layer.name()]]
 
             if len(templist) == 0:
-                QMessageBox.warning(iface.mainWindow(), "Profile tool", "No raster to add")
+                QMessageBox.warning(
+                    iface.mainWindow(), "geodesic_profiletool", "No raster to add"
+                )
                 return
             else:
                 testqt, ok = QInputDialog.getItem(
@@ -77,7 +79,7 @@ class TableViewTool(QObject):
                 text = "Active layer is not a profilable layer."
                 if layer1.type() == layer1.MeshLayer:
                     text += "\n(MeshLayer support requires QGis version 3.6 or newer.)"
-                QMessageBox.warning(iface.mainWindow(), "Profile tool", text)
+                QMessageBox.warning(iface.mainWindow(), "geodesic_profiletool", text)
                 return
 
         # Ask the Band by a input dialog
@@ -116,7 +118,9 @@ class TableViewTool(QObject):
             fields = [field.name() for field in layer2.fields() if field.isNumeric()]
             if len(fields) == 0:
                 QMessageBox.warning(
-                    iface.mainWindow(), "Profile tool", "Active layer is not a profilable layer"
+                    iface.mainWindow(),
+                    "geodesic_profiletool",
+                    "Active layer is not a profilable layer",
                 )
                 return
             elif len(fields) == 1:

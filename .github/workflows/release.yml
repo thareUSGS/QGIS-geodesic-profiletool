@@ -1,0 +1,55 @@
+name: Release QGIS plugin
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Package QGIS plugin
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${GITHUB_REF_NAME#v}"
+          metadata_version="$(sed -n 's/^version=//p' metadata.txt | head -n 1)"
+          if [[ "$version" != "$metadata_version" ]]; then
+            echo "Tag version $version does not match metadata.txt version $metadata_version" >&2
+            exit 1
+          fi
+
+          package_root="${RUNNER_TEMP}/qgis-plugin"
+          plugin_dir="${package_root}/geodesic_profiletool"
+          archive="${GITHUB_WORKSPACE}/geodesic_profiletool_${version}.zip"
+
+          mkdir -p "$plugin_dir"
+          git archive HEAD | tar -x -C "$plugin_dir"
+          rm -rf "$plugin_dir/.github" "$plugin_dir/tests"
+          rm -f "$plugin_dir/Makefile" "$plugin_dir/resources.qrc"
+
+          test -f "$plugin_dir/__init__.py"
+          test -f "$plugin_dir/metadata.txt"
+          (cd "$package_root" && zip -qr "$archive" geodesic_profiletool)
+          zip -T "$archive"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "${{ steps.package.outputs.archive }}" \
+            --verify-tag \
+            --title "geodesic_profiletool ${{ steps.package.outputs.version }}" \
+            --generate-notes

@@ -71,7 +71,7 @@ FormClass = uic.loadUiType(uiFilePath)[0]
 
 class PTDockWidget(QDockWidget, FormClass):
 
-    TITLE = "ProfileTool"
+    TITLE = "geodesic_profiletool"
     TYPE = None
 
     closed = pyqtSignal()
@@ -268,7 +268,7 @@ class PTDockWidget(QDockWidget, FormClass):
                 for item in self.plotWdg.allChildItems():
                     if (
                         str(type(item))
-                        == "<class 'profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>"
+                        == "<class 'geodesic_profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>"
                     ):
                         if item.name() == "cross_vertical":
                             item.show()
@@ -276,7 +276,7 @@ class PTDockWidget(QDockWidget, FormClass):
                             item.show()
                     elif (
                         str(type(item))
-                        == "<class 'profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>"
+                        == "<class 'geodesic_profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>"
                     ):
                         if item.textItem.toPlainText()[0] == "X":
                             item.show()
@@ -290,7 +290,7 @@ class PTDockWidget(QDockWidget, FormClass):
                 for item in self.plotWdg.allChildItems():
                     if (
                         str(type(item))
-                        == "<class 'profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>"
+                        == "<class 'geodesic_profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>"
                     ):
                         if item.name() == "cross_vertical":
                             item.hide()
@@ -298,7 +298,7 @@ class PTDockWidget(QDockWidget, FormClass):
                             item.hide()
                     elif (
                         str(type(item))
-                        == "<class 'profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>"
+                        == "<class 'geodesic_profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>"
                     ):
                         if item.textItem.toPlainText()[0] == "X":
                             item.hide()
@@ -523,7 +523,9 @@ class PTDockWidget(QDockWidget, FormClass):
     def createTemporaryLayer(self):
         nr = int(self.sender().objectName())
         type = "Point?crs=" + str(self.profiletoolcore.profiles[nr]["layer"].crs().authid())
-        name = "ProfileTool_{}".format(self._profile_name(self.profiletoolcore.profiles[nr]))
+        name = "geodesic_profiletool_{}".format(
+            self._profile_name(self.profiletoolcore.profiles[nr])
+        )
         vl = QgsVectorLayer(type, name, "memory")
         pr = vl.dataProvider()
         vl.startEditing()

@@ -235,7 +235,6 @@ class ProfileToolCore(QWidget):
 
         crs = self.iface.mapCanvas().mapSettings().destinationCrs()
         line_points = [QgsPointXY(*point) for point in points]
-        planar_length = QgsGeometry.fromPolylineXY(line_points).length()
         map_units = crs.mapUnits()
 
         try:
@@ -249,9 +248,23 @@ class ProfileToolCore(QWidget):
             geodesic_readout.setToolTip(str(error))
             geodesic_length = None
 
+        if geodesic_length is not None:
+            geodesic_readout.setText(self._formatDistance(geodesic_length))
+            geodesic_readout.setToolTip(
+                "Copyable ellipsoidal distance along the profile line."
+            )
+
         if map_units == QgsUnitTypes.DistanceUnit.DistanceDegrees:
-            planar_text = f"{planar_length:,.9f} degrees"
-        elif map_units == QgsUnitTypes.DistanceUnit.DistanceUnknownUnit:
+            planar_readout.setText("Not applicable")
+            planar_readout.setToolTip(
+                "Planar distance is not reported for geographic CRSs because "
+                "coordinate lengths in degrees are not meaningful surface distances. "
+                "Use the geodesic readout."
+            )
+            return
+
+        planar_length = QgsGeometry.fromPolylineXY(line_points).length()
+        if map_units == QgsUnitTypes.DistanceUnit.DistanceUnknownUnit:
             planar_text = f"{planar_length:,.6f} {QgsUnitTypes.toString(map_units)}"
         else:
             planar_meters = planar_length * QgsUnitTypes.fromUnitToUnitFactor(
@@ -259,12 +272,10 @@ class ProfileToolCore(QWidget):
             )
             planar_text = self._formatDistance(planar_meters)
 
-        if geodesic_length is not None:
-            geodesic_readout.setText(self._formatDistance(geodesic_length))
-            geodesic_readout.setToolTip(
-                "Copyable ellipsoidal distance along the profile line."
-            )
         planar_readout.setText(planar_text)
+        planar_readout.setToolTip(
+            "Copyable planar length in map units (or converted to meters)."
+        )
 
     def plotProfil(self, vertline=True):
         self.disableMouseCoordonates()

@@ -3,9 +3,9 @@ name=Geodesic Profiler Tool
 qgisMinimumVersion=3.40
 qgisMaximumVersion=4.99
 description=Plots geodesic terrain profile
-about=Plots terrain profiles from raster or point-vector elevation data, with graph and 3D DXF export. Distance along each profile is measured geodesically on the configured ellipsoid instead of as planar map-coordinate length. See the README for details.
+about=Plots terrain profiles from raster or point-vector elevation data, with graph and 3D DXF export. Distance along each profile is measured geodesically on the configured ellipsoid instead of as planar map-coordinate length. Planar distances are not reported for geographic CRSs because their coordinate lengths are in degrees. See the README for details.
 category=Raster
-version=0.8.5
+version=0.9.0
 author=CoPilot GPT-6 Luna - (Original authors: Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra)
 email=trent.m.hare@gmail.com
 supportsQt6=True
@@ -13,6 +13,7 @@ experimental=False
 deprecated=False
 
 changelog=
+    0.9.0 : Do not report planar distances for geographic CRSs
     0.8.5 : Clarify profile distance wording and correct spelling errors
     0.8.0 : Update plugin contact email
     0.7.5 : Show the active plotted value while hovering over a profile curve

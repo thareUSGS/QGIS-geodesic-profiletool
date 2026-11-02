@@ -13,7 +13,7 @@ Traditional planar measurement calculates line length directly from its
 coordinates in the map projection. This is straightforward, but it measures
 projected map units, which can differ from distances over a planetary body's
 surface because projections distort scale. In a geographic CRS, planar length
-is in degrees rather than meters.
+is in degrees rather than meters, so it is not a useful surface-distance value.
 
 Geodesic measurement instead measures each line segment along the surface of an
 ellipsoid and sums the segment distances. This supports Earth and other
@@ -23,20 +23,22 @@ the CRS ellipsoid when the project has no ellipsoid configured. Profile
 distances are measured in the CRS used to sample each layer, and reported in
 meters. The read-only distance indicators compare the drawn line's geodesic
 length with its planar map-coordinate length; planar units are converted to
-meters where possible, while geographic CRS planar lengths are shown in degrees.
-The values use extra decimal precision to make small differences visible;
-they can still be equal when projection distortion is negligible at the
-displayed precision.
+meters where possible. For an unprojected/geographic CRS, the planar readout
+shows **Not applicable** because its coordinate length would be in degrees and
+could be misleading; no distance is displayed in degrees. In that case, only
+the geodesic length is reported. The values use extra decimal precision to make
+small differences visible; they can still be equal when projection distortion
+is negligible at the displayed precision.
 
 ## Installation
 
-Download `geodesic_profiletool_0.8.5.zip` from the GitHub release and install it
+Download `geodesic_profiletool_0.9.0.zip` from the GitHub release and install it
 in QGIS using **Plugins > Manage and Install Plugins > Install from ZIP**.
 
 ## Releases
 
-Pushing a version tag such as `v0.8.5` creates a GitHub Release with a
-QGIS-installable `geodesic_profiletool_0.8.5.zip` asset. The tag version must
+Pushing a version tag such as `v0.9.0` creates a GitHub Release with a
+QGIS-installable `geodesic_profiletool_0.9.0.zip` asset. The tag version must
 match the plugin version in `metadata.txt`.
 
 Authors: CoPilot GPT-6 Luna - (Original authors: Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra)

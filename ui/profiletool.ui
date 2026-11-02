@@ -307,7 +307,7 @@
                     <string>Planar:</string>
                    </property>
                    <property name="toolTip">
-                    <string>Length calculated directly from map-coordinate geometry and map units.</string>
+                    <string>Planar distance is not reported for geographic CRSs because coordinate lengths in degrees are not meaningful surface distances.</string>
                    </property>
                   </widget>
                  </item>
@@ -320,7 +320,7 @@
                     </size>
                    </property>
                    <property name="toolTip">
-                    <string>Copyable planar length in map units (or converted to meters).</string>
+                    <string>Copyable planar length in map units (or converted to meters). Not applicable for geographic CRSs; use the geodesic distance instead.</string>
                    </property>
                    <property name="text">
                     <string>—</string>

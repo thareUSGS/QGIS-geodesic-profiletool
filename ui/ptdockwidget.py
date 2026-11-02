@@ -71,7 +71,7 @@ FormClass = uic.loadUiType(uiFilePath)[0]
 
 class PTDockWidget(QDockWidget, FormClass):
 
-    TITLE = "geodesic_profiletool"
+    TITLE = "Geodesic Profiler Tool"
     TYPE = None
 
     closed = pyqtSignal()

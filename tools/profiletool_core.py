@@ -37,6 +37,7 @@ from qgis.core import (
     QgsPoint,
     QgsPointXY,
     QgsProject,
+    QgsUnitTypes,
     Qgis,
 )
 from qgis.core import QgsVectorLayer, QgsFeature, QgsWkbTypes
@@ -175,6 +176,7 @@ class ProfileToolCore(QWidget):
         self.pointstoDraw = points1
         self.profiles = []
         self.distancesPicked = []
+        self.updateDistanceReadouts(points1)
 
         # calculate profiles
         for i in range(0, self.dockwidget.mdl.rowCount()):
@@ -215,6 +217,46 @@ class ProfileToolCore(QWidget):
 
         if plotProfil:
             self.plotProfil()
+
+    @staticmethod
+    def _formatDistance(distance_meters):
+        if distance_meters >= 1000:
+            return f"{distance_meters / 1000:,.3f} km"
+        return f"{distance_meters:,.2f} m"
+
+    def updateDistanceReadouts(self, points):
+        geodesic_readout = self.dockwidget.geodesicDistanceReadout
+        planar_readout = self.dockwidget.planarDistanceReadout
+        geodesic_readout.setText("geodesic distance: —")
+        planar_readout.setText("planar distance: —")
+
+        if len(points) < 2:
+            return
+
+        crs = self.iface.mapCanvas().mapSettings().destinationCrs()
+        line_points = [QgsPointXY(*point) for point in points]
+        distance_area = DataReaderTool._createDistanceArea(crs)
+        geodesic_length = sum(
+            distance_area.measureLine(start, end)
+            for start, end in zip(line_points[:-1], line_points[1:])
+        )
+        planar_length = QgsGeometry.fromPolylineXY(line_points).length()
+        map_units = crs.mapUnits()
+
+        if map_units == QgsUnitTypes.DistanceUnit.DistanceDegrees:
+            planar_text = f"{planar_length:,.6f} degrees"
+        elif map_units == QgsUnitTypes.DistanceUnit.DistanceUnknownUnit:
+            planar_text = f"{planar_length:,.2f} {QgsUnitTypes.toString(map_units)}"
+        else:
+            planar_meters = planar_length * QgsUnitTypes.fromUnitToUnitFactor(
+                map_units, QgsUnitTypes.DistanceUnit.DistanceMeters
+            )
+            planar_text = self._formatDistance(planar_meters)
+
+        geodesic_readout.setText(
+            f"geodesic distance: {self._formatDistance(geodesic_length)}"
+        )
+        planar_readout.setText(f"planar distance: {planar_text}")
 
     def plotProfil(self, vertline=True):
         self.disableMouseCoordonates()

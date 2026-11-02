@@ -59,10 +59,10 @@ class ProfilePlugin:
         # create action
         self.action = QAction(
             QIcon(path.join(self.plugin_dir, "icons/profileIcon.png")),
-            self.tr("Terrain profile"),
+            self.tr("Geodesic terrain profile"),
             self.iface.mainWindow(),
         )
-        self.action.setWhatsThis(self.tr("Plots terrain profiles"))
+        self.action.setWhatsThis(self.tr("Plots geodesic terrain profiles"))
         self.action.triggered.connect(self.run)
         self.aboutAction = QAction("About", self.iface.mainWindow())
         self.aboutAction.triggered.connect(self.about)

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>geodesic_profiletool</string>
+   <string>Geodesic Profiler Tool</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -256,6 +256,44 @@
                   <string>Interpolated profile</string>
                  </property>
                  <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="geodesicDistanceReadout">
+                 <property name="maximumSize">
+                  <size>
+                   <width>230</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Ellipsoidal distance along the profile line.</string>
+                 </property>
+                 <property name="text">
+                  <string>geodesic distance: —</string>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="planarDistanceReadout">
+                 <property name="maximumSize">
+                  <size>
+                   <width>230</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Planar length in the map CRS. Geographic CRSs report degrees.</string>
+                 </property>
+                 <property name="text">
+                  <string>planar distance: —</string>
+                 </property>
+                 <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>

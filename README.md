@@ -13,6 +13,8 @@ This plugin requires **QGIS 4.2.3 or later**. It will not function correctly in
 earlier QGIS versions because it depends on planetary support from recent QGIS
 updates completed in September 2026.
 
+The plugin interface is available in English, German, and Italian.
+
 ## Geodesic distance calculations
 
 Traditional planar measurement calculates line length directly from its
@@ -38,13 +40,13 @@ is negligible at the displayed precision.
 
 ## Installation
 
-Download `geodesic_profiletool_0.9.5.zip` from the GitHub release and install it
+Download `geodesic_profiletool_0.9.6.zip` from the GitHub release and install it
 in QGIS using **Plugins > Manage and Install Plugins > Install from ZIP**.
 
 ## Releases
 
-Pushing a version tag such as `v0.9.5` creates a GitHub Release with a
-QGIS-installable `geodesic_profiletool_0.9.5.zip` asset. The tag version must
+Pushing a version tag such as `v0.9.6` creates a GitHub Release with a
+QGIS-installable `geodesic_profiletool_0.9.6.zip` asset. The tag version must
 match the plugin version in `metadata.txt`.
 
 Authors: CoPilot GPT-6 Luna - (Original authors: Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra)

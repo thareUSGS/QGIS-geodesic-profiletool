@@ -6,4 +6,5 @@ SOURCES = ../profileplugin.py \
     ../ui/ptdockwidget.py \
     ../ui/dlgabout.py
     
-TRANSLATIONS = profiletool_de.ts
+TRANSLATIONS = profiletool_de.ts \
+    profiletool_it.ts

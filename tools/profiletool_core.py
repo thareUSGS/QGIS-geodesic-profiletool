@@ -221,14 +221,14 @@ class ProfileToolCore(QWidget):
     @staticmethod
     def _formatDistance(distance_meters):
         if distance_meters >= 1000:
-            return f"{distance_meters / 1000:,.3f} km"
-        return f"{distance_meters:,.2f} m"
+            return f"{distance_meters / 1000:,.6f} km"
+        return f"{distance_meters:,.3f} m"
 
     def updateDistanceReadouts(self, points):
         geodesic_readout = self.dockwidget.geodesicDistanceReadout
         planar_readout = self.dockwidget.planarDistanceReadout
-        geodesic_readout.setText("geodesic distance: —")
-        planar_readout.setText("planar distance: —")
+        geodesic_readout.setText("—")
+        planar_readout.setText("—")
 
         if len(points) < 2:
             return
@@ -244,19 +244,17 @@ class ProfileToolCore(QWidget):
         map_units = crs.mapUnits()
 
         if map_units == QgsUnitTypes.DistanceUnit.DistanceDegrees:
-            planar_text = f"{planar_length:,.6f} degrees"
+            planar_text = f"{planar_length:,.9f} degrees"
         elif map_units == QgsUnitTypes.DistanceUnit.DistanceUnknownUnit:
-            planar_text = f"{planar_length:,.2f} {QgsUnitTypes.toString(map_units)}"
+            planar_text = f"{planar_length:,.6f} {QgsUnitTypes.toString(map_units)}"
         else:
             planar_meters = planar_length * QgsUnitTypes.fromUnitToUnitFactor(
                 map_units, QgsUnitTypes.DistanceUnit.DistanceMeters
             )
             planar_text = self._formatDistance(planar_meters)
 
-        geodesic_readout.setText(
-            f"geodesic distance: {self._formatDistance(geodesic_length)}"
-        )
-        planar_readout.setText(f"planar distance: {planar_text}")
+        geodesic_readout.setText(self._formatDistance(geodesic_length))
+        planar_readout.setText(planar_text)
 
     def plotProfil(self, vertline=True):
         self.disableMouseCoordonates()

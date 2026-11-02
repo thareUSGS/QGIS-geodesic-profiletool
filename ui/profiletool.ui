@@ -261,42 +261,76 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="geodesicDistanceReadout">
-                 <property name="maximumSize">
-                  <size>
-                   <width>230</width>
-                   <height>16777215</height>
-                  </size>
+                <layout class="QHBoxLayout" name="geodesicDistanceLayout">
+                 <property name="spacing">
+                  <number>3</number>
                  </property>
-                 <property name="toolTip">
-                  <string>Ellipsoidal distance along the profile line.</string>
-                 </property>
-                 <property name="text">
-                  <string>geodesic distance: —</string>
-                 </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                </widget>
+                 <item>
+                  <widget class="QLabel" name="geodesicDistanceLabel">
+                   <property name="text">
+                    <string>Geodesic:</string>
+                   </property>
+                   <property name="toolTip">
+                    <string>Ellipsoidal distance along the profile line.</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="geodesicDistanceReadout">
+                   <property name="maximumSize">
+                    <size>
+                     <width>150</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string>Copyable ellipsoidal distance along the profile line.</string>
+                   </property>
+                   <property name="text">
+                    <string>—</string>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item>
-                <widget class="QLineEdit" name="planarDistanceReadout">
-                 <property name="maximumSize">
-                  <size>
-                   <width>230</width>
-                   <height>16777215</height>
-                  </size>
+                <layout class="QHBoxLayout" name="planarDistanceLayout">
+                 <property name="spacing">
+                  <number>3</number>
                  </property>
-                 <property name="toolTip">
-                  <string>Planar length in the map CRS. Geographic CRSs report degrees.</string>
-                 </property>
-                 <property name="text">
-                  <string>planar distance: —</string>
-                 </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                </widget>
+                 <item>
+                  <widget class="QLabel" name="planarDistanceLabel">
+                   <property name="text">
+                    <string>Planar:</string>
+                   </property>
+                   <property name="toolTip">
+                    <string>Length calculated directly from map-coordinate geometry and map units.</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="planarDistanceReadout">
+                   <property name="maximumSize">
+                    <size>
+                     <width>150</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string>Copyable planar length in map units (or converted to meters).</string>
+                   </property>
+                   <property name="text">
+                    <string>—</string>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item>
                 <widget class="QStackedWidget" name="stackedWidget">

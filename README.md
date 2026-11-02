@@ -11,28 +11,32 @@ project does not specify one).
 
 Traditional planar measurement calculates line length directly from its
 coordinates in the map projection. This is straightforward, but it measures
-projected map units, which can differ from distances over the Earth's surface
-because projections distort scale. In a geographic CRS, planar length is in
-degrees rather than meters.
+projected map units, which can differ from distances over a planetary body's
+surface because projections distort scale. In a geographic CRS, planar length
+is in degrees rather than meters.
 
 Geodesic measurement instead measures each line segment along the surface of an
-ellipsoid and sums the segment distances. This plugin uses QGIS `QgsDistanceArea`
-with the project's configured ellipsoid, falling back to the CRS ellipsoid when
-the project has no ellipsoid configured. Profile distances are measured in the
-CRS used to sample each layer, and reported in meters. The read-only distance
-indicators also compare the drawn line's geodesic length with its planar length
-in the map CRS; planar units are converted to meters where possible, while
-geographic CRS planar lengths are shown in degrees.
+ellipsoid and sums the segment distances. This supports Earth and other
+planetary bodies when their ellipsoid is configured in QGIS. The plugin uses
+QGIS `QgsDistanceArea` with the project's configured ellipsoid, falling back to
+the CRS ellipsoid when the project has no ellipsoid configured. Profile
+distances are measured in the CRS used to sample each layer, and reported in
+meters. The read-only distance indicators compare the drawn line's geodesic
+length with its planar map-coordinate length; planar units are converted to
+meters where possible, while geographic CRS planar lengths are shown in degrees.
+The values use extra decimal precision to make small differences visible;
+they can still be equal when projection distortion is negligible at the
+displayed precision.
 
 ## Installation
 
-Download `geodesic_profiletool_0.5.0.zip` from the GitHub release and install it
+Download `geodesic_profiletool_0.6.0.zip` from the GitHub release and install it
 in QGIS using **Plugins > Manage and Install Plugins > Install from ZIP**.
 
 ## Releases
 
-Pushing a version tag such as `v0.5.0` creates a GitHub Release with a
-QGIS-installable `geodesic_profiletool_0.5.0.zip` asset. The tag version must
+Pushing a version tag such as `v0.6.0` creates a GitHub Release with a
+QGIS-installable `geodesic_profiletool_0.6.0.zip` asset. The tag version must
 match the plugin version in `metadata.txt`.
 
 Authors: CoPilot GPT-6 Luna - (Orginal authors: Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra)

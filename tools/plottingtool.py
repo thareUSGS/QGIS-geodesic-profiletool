@@ -94,8 +94,18 @@ class PlottingTool:
                 fill=pg.mkBrush("w"),
                 anchor=(0, 0),
             )
+            valueTextItem = pg.TextItem(
+                "Value: —",
+                color=(0, 0, 0),
+                border=pg.mkPen(color=(0, 0, 0), width=1),
+                fill=pg.mkBrush("w"),
+                anchor=(1, 1),
+            )
             plotWdg.addItem(xtextitem)
             plotWdg.addItem(ytextitem)
+            plotWdg.addItem(valueTextItem)
+            valueTextItem.hide()
+            plotWdg.profileValueTextItem = valueTextItem
 
             plotWdg.getViewBox().autoRange(items=[])
             plotWdg.getViewBox().disableAutoRange()
@@ -262,6 +272,10 @@ class PlottingTool:
                     wdg.plotWdg.draw()
 
     def clearData(self, wdg, profiles, library):  # erase one of profiles
+        if library == "PyQtGraph":
+            wdg.plotWdg.profileValueTextItem.setText("Value: —")
+            wdg.plotWdg.profileValueTextItem.hide()
+
         if not profiles:
             return
 

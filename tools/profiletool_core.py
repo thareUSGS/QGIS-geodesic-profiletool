@@ -505,46 +505,46 @@ class ProfileToolCore(QWidget):
             self.dockwidget.connectPlotRangechanged()
 
     def mouseClickedPyQtGraph(self, event):
-       if not self.dockwidget.cbAddPoint.isChecked():
-           return
+        if not self.dockwidget.cbAddPoint.isChecked():
+            return
 
-       pos = event.scenePos()
-       if self.dockwidget.plotWdg.sceneBoundingRect().contains(pos) and self.dockwidget.showcursor:
-            range = self.dockwidget.plotWdg.getViewBox().viewRange()
-            # récupère le point souris à partir ViewBox
-            mousePoint = self.dockwidget.plotWdg.getViewBox().mapSceneToView(pos)
+        pos = event.scenePos()
+        if not (
+            self.dockwidget.plotWdg.sceneBoundingRect().contains(pos)
+            and self.dockwidget.showcursor
+        ):
+            return
 
-            datas = []
-            pitems = self.dockwidget.plotWdg.getPlotItem()
-            ytoplot = None
-            xtoplot = None
+        mouse_point = self.dockwidget.plotWdg.getViewBox().mapSceneToView(pos)
+        data_items = self.dockwidget.plotWdg.getPlotItem().listDataItems()
+        nearest_x = None
+        nearest_y = None
+        nearest_vertical_distance = None
 
-            if len(pitems.listDataItems()) > 0:
-                # get data and nearest xy from cursor
-                compt = 0
-                try:
-                    for item in pitems.listDataItems():
-                        if item.isVisible():
-                            x, y = item.getData()
-                            nearestindex = np.argmin(abs(np.array(x, dtype=float) - mousePoint.x()))
-                            if compt == 0:
-                                xtoplot = np.array(x, dtype=float)[nearestindex]
-                                ytoplot = np.array(y)[nearestindex]
-                            else:
-                                if abs(np.array(y)[nearestindex] - mousePoint.y()) < abs(ytoplot - mousePoint.y()):
-                                    ytoplot = np.array(y)[nearestindex]
-                                    xtoplot = np.array(x)[nearestindex]
-                            compt += 1
-                except (IndexError, ValueError):
-                    ytoplot = None
-                    xtoplot = None
+        for item in data_items:
+            if not item.isVisible():
+                continue
+            x_values, y_values = item.getData()
+            if x_values is None or y_values is None or len(x_values) == 0:
+                continue
 
-                if xtoplot and ytoplot:
-                    xtoplot = round(xtoplot,2)
-                    ytoplot = round(ytoplot,2)
-                    if not xtoplot in self.distancesPicked:
-                        self.setPointOnMap(xtoplot,ytoplot)
-                        self.distancesPicked.append(xtoplot)
+            x_values = np.asarray(x_values, dtype=float)
+            y_values = np.asarray(y_values, dtype=float)
+            index = np.argmin(np.abs(x_values - mouse_point.x()))
+            vertical_distance = abs(y_values[index] - mouse_point.y())
+            if nearest_vertical_distance is None or vertical_distance < nearest_vertical_distance:
+                nearest_x = x_values[index]
+                nearest_y = y_values[index]
+                nearest_vertical_distance = vertical_distance
+
+        if nearest_x is None or nearest_y is None:
+            return
+
+        nearest_x = round(float(nearest_x), 2)
+        nearest_y = round(float(nearest_y), 2)
+        if nearest_x not in self.distancesPicked:
+            self.setPointOnMap(nearest_x, nearest_y)
+            self.distancesPicked.append(nearest_x)
 
     def disableMouseCoordonates(self):
         with suppress(AttributeError, RuntimeError, TypeError):
@@ -563,30 +563,46 @@ class ProfileToolCore(QWidget):
             pitems = self.dockwidget.plotWdg.getPlotItem()
             ytoplot = None
             xtoplot = None
+            selected_profile = None
 
             if len(pitems.listDataItems()) > 0:
                 # get data and nearest xy from cursor
                 compt = 0
                 try:
-                    for item in pitems.listDataItems():
+                    for profile_index, item in enumerate(pitems.listDataItems()):
                         if item.isVisible():
                             x, y = item.getData()
                             nearestindex = np.argmin(abs(np.array(x, dtype=float) - mousePoint.x()))
                             if compt == 0:
                                 xtoplot = np.array(x, dtype=float)[nearestindex]
                                 ytoplot = np.array(y)[nearestindex]
+                                selected_profile = self.profiles[profile_index]
                             else:
                                 if abs(np.array(y)[nearestindex] - mousePoint.y()) < abs(
                                     ytoplot - mousePoint.y()
                                 ):
                                     ytoplot = np.array(y)[nearestindex]
                                     xtoplot = np.array(x)[nearestindex]
+                                    selected_profile = self.profiles[profile_index]
                             compt += 1
                 except (IndexError, ValueError):
                     ytoplot = None
                     xtoplot = None
+                    selected_profile = None
                 # plot xy label and cursor
-                if xtoplot is not None and ytoplot is not None:
+                if (
+                    xtoplot is not None
+                    and ytoplot is not None
+                    and selected_profile is not None
+                ):
+                    value_label = self.dockwidget.plotWdg.profileValueTextItem
+                    profile_name = selected_profile["layer"].name()
+                    plot_name = self.dockwidget.plotComboBox.currentText()
+                    value_label.setText(
+                        f"{plot_name} | {profile_name}: {float(ytoplot):.3f}"
+                    )
+                    value_label.setPos(range[0][1], range[1][1])
+                    value_label.show()
                     for item in self.dockwidget.plotWdg.allChildItems():
                         if (
                             str(type(item))
@@ -610,5 +626,7 @@ class ProfileToolCore(QWidget):
                                 item.show()
                                 item.setText("Y : " + str(round(ytoplot, 3)))
                                 item.setPos(range[0][0], ytoplot)
+                else:
+                    self.dockwidget.plotWdg.profileValueTextItem.hide()
             # tracking part
             self.updateCursorOnMap(xtoplot)

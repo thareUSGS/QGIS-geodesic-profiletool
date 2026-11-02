@@ -5,7 +5,7 @@ qgisMaximumVersion=4.99
 description=Plots geodesic terrain profile
 about=Plots terrain profiles from raster or point-vector elevation data, with graph and 3D DXF export. Profile chainage is measured geodesically on the configured ellipsoid instead of as planar map-coordinate length. See the README for details.
 category=Raster
-version=0.7.0
+version=0.7.5
 author=CoPilot GPT-6 Luna - (Orginal authors: Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra)
 email=javier@panoimagen.com
 supportsQt6=True
@@ -13,6 +13,7 @@ experimental=False
 deprecated=False
 
 changelog=
+    0.7.5 : Show the active plotted value while hovering over a profile curve
     0.7.0 : Keep profile rendering available when geodesic distance cannot be calculated
     0.6.0 : Improve copyable geodesic and planar distance readouts and document planetary ellipsoid support
     0.5.0 : Rename plugin display, add planar/geodesic distance readouts, and document geodesic calculations

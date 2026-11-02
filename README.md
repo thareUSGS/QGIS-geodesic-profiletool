@@ -30,13 +30,13 @@ displayed precision.
 
 ## Installation
 
-Download `geodesic_profiletool_0.7.0.zip` from the GitHub release and install it
+Download `geodesic_profiletool_0.7.5.zip` from the GitHub release and install it
 in QGIS using **Plugins > Manage and Install Plugins > Install from ZIP**.
 
 ## Releases
 
-Pushing a version tag such as `v0.7.0` creates a GitHub Release with a
-QGIS-installable `geodesic_profiletool_0.7.0.zip` asset. The tag version must
+Pushing a version tag such as `v0.7.5` creates a GitHub Release with a
+QGIS-installable `geodesic_profiletool_0.7.5.zip` asset. The tag version must
 match the plugin version in `metadata.txt`.
 
 Authors: CoPilot GPT-6 Luna - (Orginal authors: Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra)

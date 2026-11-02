@@ -102,6 +102,11 @@ p, li { white-space: pre-wrap; }
             <source>Plots geodesic terrain profiles</source>
             <translation>Disegna profili altimetrici geodetici</translation>
         </message>
+        <message>
+            <location filename="../profileplugin.py" line="71" />
+            <source>&amp;Geodesic Profile Tool</source>
+            <translation>&amp;Strumento per profili geodetici</translation>
+        </message>
     </context>
     <context>
         <name>ProfileTool</name>

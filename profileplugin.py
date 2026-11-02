@@ -68,16 +68,16 @@ class ProfilePlugin:
         self.aboutAction.triggered.connect(self.about)
         # add toolbar button and menu item
         self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToMenu("&geodesic_profiletool", self.action)
-        self.iface.addPluginToMenu("&geodesic_profiletool", self.aboutAction)
+        self.iface.addPluginToMenu(self.tr("&Geodesic Profile Tool"), self.action)
+        self.iface.addPluginToMenu(self.tr("&Geodesic Profile Tool"), self.aboutAction)
 
     def unload(self):
         with suppress(AttributeError, RuntimeError, TypeError):
             self.profiletool.dockwidget.close()
 
         self.iface.removeToolBarIcon(self.action)
-        self.iface.removePluginMenu("&geodesic_profiletool", self.action)
-        self.iface.removePluginMenu("&geodesic_profiletool", self.aboutAction)
+        self.iface.removePluginMenu(self.tr("&Geodesic Profile Tool"), self.action)
+        self.iface.removePluginMenu(self.tr("&Geodesic Profile Tool"), self.aboutAction)
 
     def tr(self, message):
         return QCoreApplication.translate("ProfilePlugin", message)

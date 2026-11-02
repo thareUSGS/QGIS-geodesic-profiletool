@@ -89,6 +89,11 @@ p, li { white-space: pre-wrap; }
         <source>Plots geodesic terrain profiles</source>
         <translation>Zeichnet geodätische Geländeprofile</translation>
     </message>
+    <message>
+        <location filename="../profileplugin.py" line="74"/>
+        <source>&amp;Geodesic Profile Tool</source>
+        <translation>&amp;Geodätisches Profilwerkzeug</translation>
+    </message>
 </context>
 <context>
     <name>ProfileTool</name>

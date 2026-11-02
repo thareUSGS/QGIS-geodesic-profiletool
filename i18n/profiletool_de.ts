@@ -81,21 +81,51 @@ p, li { white-space: pre-wrap; }
     <name>ProfilePlugin</name>
     <message>
         <location filename="../profileplugin.py" line="78"/>
-        <source>Terrain profile</source>
-        <translation>Geländeprofil</translation>
+        <source>Geodesic terrain profile</source>
+        <translation>Geodätisches Geländeprofil</translation>
     </message>
     <message>
         <location filename="../profileplugin.py" line="81"/>
-        <source>Plots terrain profiles</source>
-        <translation>Zeichnet Geländeprofile</translation>
+        <source>Plots geodesic terrain profiles</source>
+        <translation>Zeichnet geodätische Geländeprofile</translation>
     </message>
 </context>
 <context>
     <name>ProfileTool</name>
     <message>
         <location filename="../ui/profiletool.ui" line="14"/>
-        <source>Profile Tool</source>
-        <translation>Profil Werkzeug</translation>
+        <source>Geodesic Profiler Tool</source>
+        <translation>Geodätisches Profilwerkzeug</translation>
+    </message>
+    <message>
+        <location filename="../ui/profiletool.ui" line="271"/>
+        <source>Geodesic:</source>
+        <translation>Geodätisch:</translation>
+    </message>
+    <message>
+        <location filename="../ui/profiletool.ui" line="274"/>
+        <source>Ellipsoidal distance along the profile line.</source>
+        <translation>Ellipsoidische Entfernung entlang der Profillinie.</translation>
+    </message>
+    <message>
+        <location filename="../ui/profiletool.ui" line="284"/>
+        <source>Copyable ellipsoidal distance along the profile line.</source>
+        <translation>Kopierbare ellipsoidische Entfernung entlang der Profillinie.</translation>
+    </message>
+    <message>
+        <location filename="../ui/profiletool.ui" line="307"/>
+        <source>Planar:</source>
+        <translation>Planar:</translation>
+    </message>
+    <message>
+        <location filename="../ui/profiletool.ui" line="310"/>
+        <source>Planar distance is not reported for geographic CRSs because coordinate lengths in degrees are not meaningful surface distances.</source>
+        <translation>Für geografische KBS wird keine planare Entfernung angegeben, da Koordinatenlängen in Grad keine aussagekräftigen Entfernungen auf der Oberfläche darstellen.</translation>
+    </message>
+    <message>
+        <location filename="../ui/profiletool.ui" line="323"/>
+        <source>Copyable planar length in map units (or converted to meters). Not applicable for geographic CRSs; use the geodesic distance instead.</source>
+        <translation>Kopierbare planare Länge in Karteneinheiten (oder in Meter umgerechnet). Für geografische KBS nicht anwendbar; verwenden Sie stattdessen die geodätische Entfernung.</translation>
     </message>
     <message>
         <location filename="../ui/profiletool.ui" line="52"/>
@@ -238,6 +268,34 @@ auf Grafik mit Leinwand</translation>
         <location filename="../ui/profiletool.ui" line="488"/>
         <source>Full resolution enabled</source>
         <translation>Volle Auflösung aktiviert</translation>
+    </message>
+</context>
+<context>
+    <name>ProfileToolCore</name>
+    <message>
+        <location filename="../tools/profiletool_core.py" line="249"/>
+        <source>Unavailable</source>
+        <translation>Nicht verfügbar</translation>
+    </message>
+    <message>
+        <location filename="../tools/profiletool_core.py" line="265"/>
+        <source>Not applicable</source>
+        <translation>Nicht anwendbar</translation>
+    </message>
+    <message>
+        <location filename="../tools/profiletool_core.py" line="260"/>
+        <source>Copyable ellipsoidal distance along the profile line.</source>
+        <translation>Kopierbare ellipsoidische Entfernung entlang der Profillinie.</translation>
+    </message>
+    <message>
+        <location filename="../tools/profiletool_core.py" line="270"/>
+        <source>Planar distance is not reported for geographic CRSs because coordinate lengths in degrees are not meaningful surface distances. Use the geodesic readout.</source>
+        <translation>Für geografische KBS wird keine planare Entfernung angegeben, da Koordinatenlängen in Grad keine aussagekräftigen Entfernungen auf der Oberfläche darstellen. Verwenden Sie stattdessen die geodätische Anzeige.</translation>
+    </message>
+    <message>
+        <location filename="../tools/profiletool_core.py" line="284"/>
+        <source>Copyable planar length in map units (or converted to meters).</source>
+        <translation>Kopierbare planare Länge in Karteneinheiten (oder in Meter umgerechnet).</translation>
     </message>
 </context>
 </TS>

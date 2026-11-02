@@ -43,7 +43,7 @@ from qgis.core import (
 from qgis.core import QgsVectorLayer, QgsFeature, QgsWkbTypes
 
 # from qgis.gui import *
-from qgis.PyQt.QtCore import QSettings, Qt
+from qgis.PyQt.QtCore import QCoreApplication, QSettings, Qt
 
 # from qgis.PyQt.QtGui import QColor
 # from qgis.PyQt.QtSvg import *  # required in some distros
@@ -244,22 +244,32 @@ class ProfileToolCore(QWidget):
                 for start, end in zip(line_points[:-1], line_points[1:])
             )
         except ValueError as error:
-            geodesic_readout.setText("Unavailable")
+            geodesic_readout.setText(
+                QCoreApplication.translate("ProfileToolCore", "Unavailable")
+            )
             geodesic_readout.setToolTip(str(error))
             geodesic_length = None
 
         if geodesic_length is not None:
             geodesic_readout.setText(self._formatDistance(geodesic_length))
             geodesic_readout.setToolTip(
-                "Copyable ellipsoidal distance along the profile line."
+                QCoreApplication.translate(
+                    "ProfileToolCore",
+                    "Copyable ellipsoidal distance along the profile line.",
+                )
             )
 
         if map_units == QgsUnitTypes.DistanceUnit.DistanceDegrees:
-            planar_readout.setText("Not applicable")
+            planar_readout.setText(
+                QCoreApplication.translate("ProfileToolCore", "Not applicable")
+            )
             planar_readout.setToolTip(
-                "Planar distance is not reported for geographic CRSs because "
-                "coordinate lengths in degrees are not meaningful surface distances. "
-                "Use the geodesic readout."
+                QCoreApplication.translate(
+                    "ProfileToolCore",
+                    "Planar distance is not reported for geographic CRSs because "
+                    "coordinate lengths in degrees are not meaningful surface "
+                    "distances. Use the geodesic readout.",
+                )
             )
             return
 
@@ -274,7 +284,10 @@ class ProfileToolCore(QWidget):
 
         planar_readout.setText(planar_text)
         planar_readout.setToolTip(
-            "Copyable planar length in map units (or converted to meters)."
+            QCoreApplication.translate(
+                "ProfileToolCore",
+                "Copyable planar length in map units (or converted to meters).",
+            )
         )
 
     def plotProfil(self, vertline=True):

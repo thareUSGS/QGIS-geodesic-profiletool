@@ -3,16 +3,17 @@ name=Geodesic Profiler Tool
 qgisMinimumVersion=3.40
 qgisMaximumVersion=4.99
 description=Plots geodesic terrain profile
-about=Plots terrain profiles from raster or point-vector elevation data, with graph and 3D DXF export. Profile chainage is measured geodesically on the configured ellipsoid instead of as planar map-coordinate length. See the README for details.
+about=Plots terrain profiles from raster or point-vector elevation data, with graph and 3D DXF export. Distance along each profile is measured geodesically on the configured ellipsoid instead of as planar map-coordinate length. See the README for details.
 category=Raster
-version=0.8.0
-author=CoPilot GPT-6 Luna - (Orginal authors: Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra)
+version=0.8.5
+author=CoPilot GPT-6 Luna - (Original authors: Borys Jurgiel - Patrice Verchere - Etienne Tourigny - Javier Becerra)
 email=trent.m.hare@gmail.com
 supportsQt6=True
 experimental=False
 deprecated=False
 
 changelog=
+    0.8.5 : Clarify profile distance wording and correct spelling errors
     0.8.0 : Update plugin contact email
     0.7.5 : Show the active plotted value while hovering over a profile curve
     0.7.0 : Keep profile rendering available when geodesic distance cannot be calculated
@@ -22,7 +23,7 @@ changelog=
     0.1.0 : Initial geodesic_profiletool release with geodesic profile distances
     4.3.4 : Remaining fixes for QGIS4 support (#108 by @Githubcopilot111)
     4.3.3 : QGIS4 support (#106 by @kannes)
-    4.3.2 : Add support for picking and saving profile points when "Link mouse position" and "Tools Settings > Save seleted points..." are enabled(by Christoph Candido - github/cxcandid)
+    4.3.2 : Add support for picking and saving profile points when "Link mouse position" and "Tools Settings > Save selected points..." are enabled (by Christoph Candido - github/cxcandid)
         - points are stored in layer "profile_points" with fields "d" (horizontal distance from startpoint) and "z" (raster band value)
         - if layer "profile_points" does not exist, a memory layer is automatically created
     4.3.1 : Nothing has changed, just a stable version. Let's see if more issue comes up!
@@ -44,7 +45,7 @@ changelog=
         - PyQtGraph upgrade (0.11.0 -> 0.12.1)
     4.1.9 : Fix Issue #32
     4.1.8 : Fix Issue #35
-    4.1.7 : Fix Issues #25, #27, #30 and reaply patch for issue #23.
+    4.1.7 : Fix Issues #25, #27, #30 and reapply patch for issue #23.
     4.1.6 : Add support for QGSMeshLayer Type (QGIS > 3.6)
     4.1.5 : Fix Issues #14, #15, #16, #17, #18
     4.1.4 : Fix #13 - TypeError
@@ -60,7 +61,7 @@ changelog=
     3.7.1 : Remove ancient code and fix compatibility with QGIS 2.16
     3.7.0 : Mouse tracking and pluginlayer adaptations
     3.6.7 : Add option to include coordinates to the csv output (by martst)
-    3.6.6 : Adjustable Y scale, proprer representation of nodata values in Qwt5 plots
+    3.6.6 : Adjustable Y scale, proper representation of nodata values in Qwt5 plots
     3.6.5 : Refresh the plot when layer's dataChanged signal is emitted (by Martin Dobias)
     3.6.4 : bugfixes from radosuav
     3.6.3 : fix bugs #6870, #9002 and #9111

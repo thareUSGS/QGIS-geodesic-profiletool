@@ -176,7 +176,6 @@ class ProfileToolCore(QWidget):
         self.pointstoDraw = points1
         self.profiles = []
         self.distancesPicked = []
-        self.updateDistanceReadouts(points1)
 
         # calculate profiles
         for i in range(0, self.dockwidget.mdl.rowCount()):
@@ -217,6 +216,7 @@ class ProfileToolCore(QWidget):
 
         if plotProfil:
             self.plotProfil()
+        self.updateDistanceReadouts(points1)
 
     @staticmethod
     def _formatDistance(distance_meters):
@@ -235,13 +235,19 @@ class ProfileToolCore(QWidget):
 
         crs = self.iface.mapCanvas().mapSettings().destinationCrs()
         line_points = [QgsPointXY(*point) for point in points]
-        distance_area = DataReaderTool._createDistanceArea(crs)
-        geodesic_length = sum(
-            distance_area.measureLine(start, end)
-            for start, end in zip(line_points[:-1], line_points[1:])
-        )
         planar_length = QgsGeometry.fromPolylineXY(line_points).length()
         map_units = crs.mapUnits()
+
+        try:
+            distance_area = DataReaderTool._createDistanceArea(crs)
+            geodesic_length = sum(
+                distance_area.measureLine(start, end)
+                for start, end in zip(line_points[:-1], line_points[1:])
+            )
+        except ValueError as error:
+            geodesic_readout.setText("Unavailable")
+            geodesic_readout.setToolTip(str(error))
+            geodesic_length = None
 
         if map_units == QgsUnitTypes.DistanceUnit.DistanceDegrees:
             planar_text = f"{planar_length:,.9f} degrees"
@@ -253,7 +259,11 @@ class ProfileToolCore(QWidget):
             )
             planar_text = self._formatDistance(planar_meters)
 
-        geodesic_readout.setText(self._formatDistance(geodesic_length))
+        if geodesic_length is not None:
+            geodesic_readout.setText(self._formatDistance(geodesic_length))
+            geodesic_readout.setToolTip(
+                "Copyable ellipsoidal distance along the profile line."
+            )
         planar_readout.setText(planar_text)
 
     def plotProfil(self, vertline=True):
